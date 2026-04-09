@@ -1,21 +1,36 @@
 
 import React, { useState } from 'react'
-
+import apiClient from '../api/apiClient';
+import { isAxiosError } from "axios";
 const LoginForm = () => {
-
+  
     const [formData, setFormData] = useState({
         email:"",
         password:""
     });
-
+ const [error, setError] = useState(null);
     const handleDataChange = (e)=>{
         setFormData({ ...formData, [e.target.name]: e.target.value })
     }
 
-    const handleSubmit = (e)=>{
-        e.preventDefault();
-        console.log(`Data is arriving with Email: ${formData.email}`);     
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+    
+      const resp = await apiClient.post("/auth/Login", formData);
+    } catch (error) {
+      if (isAxiosError(error)) {
+        if (error.request) {
+          setError("Network error");
+        } else if (error.response) {
+          setError(error.response.data.error);
+        }
+      }else{
+        setError("Unknown error");
+      }
+      
     }
+  };
   return (
     <div>
         <form onSubmit={handleSubmit} className='auth-container'>
@@ -24,7 +39,7 @@ const LoginForm = () => {
             <label htmlFor="password">Password</label>
             <input type="password" name='password' id='password' onChange={handleDataChange}/>
 
-            <button type='submit'>Login</button>
+            <button type='submit' onChange={handleSubmit}>Login</button>
         </form>
     </div>
   )
